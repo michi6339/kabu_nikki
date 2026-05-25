@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>株日記</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a18;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  .header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .header h1 {
+    font-size: 22px;
+    font-weight: 500;
+  }
+
+  .header .date {
+    font-size: 13px;
+    color: #888780;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+
+  .summary-card {
+    background: #ebe9e3;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  .summary-card.full {
+    grid-column: span 2;
+  }
+
+  .summary-card .label {
+    font-size: 12px;
+    color: #888780;
+    margin-bottom: 4px;
+  }
+
+  .summary-card .value {
+    font-size: 24px;
+    font-weight: 500;
+  }
+
+  .form-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-card h2 {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .form-group label {
+    font-size: 12px;
+    color: #888780;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  input[type=text],
+  input[type=number],
+  select,
+  textarea {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 14px;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 6px;
+    background: #faf9f7;
+    color: #1a1a18;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: rgba(0,0,0,0.4);
+    background: #fff;
+  }
+
+  textarea {
+    height: 64px;
+    resize: none;
+  }
+
+  .memo-group {
+    margin-bottom: 10px;
+  }
+
+  .memo-group label {
+    font-size: 12px;
+    color: #888780;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 10px;
+    background: #1a1a18;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:active { opacity: 0.7; }
+
+  .entry-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.1);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 12px;
+  }
+
+  .entry-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .entry-meta {
+    font-size: 12px;
+    color: #888780;
+    margin-bottom: 2px;
+  }
+
+  .entry-name {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .entry-pnl {
+    text-align: right;
+  }
+
+  .entry-pnl .amount {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .entry-pnl .pct {
+    font-size: 12px;
+  }
+
+  .mini-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .mini-card {
+    background: #f5f4f0;
+    border-radius: 6px;
+    padding: 8px;
+  }
+
+  .mini-card .mini-label {
+    font-size: 11px;
+    color: #888780;
+    margin-bottom: 2px;
+  }
+
+  .mini-card .mini-value {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .current-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .current-row label {
+    font-size: 12px;
+    color: #888780;
+    white-space: nowrap;
+  }
+
+  .current-row input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .current-row span {
+    font-size: 12px;
+    color: #888780;
+    white-space: nowrap;
+  }
+
+  .lines-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .badge-stop {
+    font-size: 12px;
+    padding: 3px 10px;
+    background: #fcebeb;
+    color: #a32d2d;
+    border-radius: 6px;
+  }
+
+  .badge-target {
+    font-size: 12px;
+    padding: 3px 10px;
+    background: #eaf3de;
+    color: #3b6d11;
+    border-radius: 6px;
+  }
+
+  .entry-reason {
+    font-size: 13px;
+    color: #5f5e5a;
+    border-left: 2px solid rgba(0,0,0,0.15);
+    padding-left: 10px;
+    margin-bottom: 10px;
+  }
+
+  .btn-delete {
+    font-size: 12px;
+    color: #888780;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+  }
+
+  .btn-delete:hover { color: #a32d2d; }
+
+  .positive { color: #3b6d11; }
+  .negative { color: #a32d2d; }
+  .neutral  { color: #1a1a18; }
+
+  .empty {
+    font-size: 14px;
+    color: #888780;
+    text-align: center;
+    padding: 2rem 0;
+  }
+
+  @media (max-width: 480px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .mini-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>株日記</h1>
+    <span class="date" id="today-date"></span>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="label">現物 含み損益</div>
+      <div class="value" id="genbutsu-total">¥0</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">信用 含み損益</div>
+      <div class="value" id="shinyou-total">¥0</div>
+    </div>
+    <div class="summary-card full">
+      <div class="label">合計 含み損益</div>
+      <div class="value" id="all-total">¥0</div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h2>今日の取引記録</h2>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>銘柄コード</label>
+        <input type="text" id="code" placeholder="例: 1952" />
+      </div>
+      <div class="form-group">
+        <label>銘柄名</label>
+        <input type="text" id="name" placeholder="例: 新日本空調" />
+      </div>
+      <div class="form-group">
+        <label>取得単価（円）</label>
+        <input type="number" id="price" placeholder="例: 3150" />
+      </div>
+      <div class="form-group">
+        <label>株数</label>
+        <input type="number" id="shares" placeholder="例: 100" />
+      </div>
+      <div class="form-group">
+        <label>現在値（円）</label>
+        <input type="number" id="current" placeholder="例: 3200" />
+      </div>
+      <div class="form-group">
+        <label>区分</label>
+        <select id="type">
+          <option value="genbutsu">現物</option>
+          <option value="shinyou">信用</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="memo-group">
+      <label>購入理由・メモ</label>
+      <textarea id="reason" placeholder="例: 週足52週線タッチ・PER11倍・原子力×DC・損切り3000円・利確4000円"></textarea>
+    </div>
+
+    <div class="form-grid" style="margin-bottom: 12px;">
+      <div class="form-group">
+        <label>損切りライン（円）</label>
+        <input type="number" id="stop" placeholder="例: 3000" />
+      </div>
+      <div class="form-group">
+        <label>利確ライン（円）</label>
+        <input type="number" id="target" placeholder="例: 4000" />
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="addEntry()">記録する</button>
+  </div>
+
+  <div id="entries-container"></div>
+
+</div>
+
+<script>
+  document.getElementById('today-date').textContent =
+    new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric',weekday:'short'});
+
+  let entries = [];
+  try { entries = JSON.parse(localStorage.getItem('kabu_nikki_v2') || '[]'); } catch(e) {}
+
+  function save() {
+    localStorage.setItem('kabu_nikki_v2', JSON.stringify(entries));
+    render();
+  }
+
+  function addEntry() {
+    const code    = document.getElementById('code').value.trim();
+    const name    = document.getElementById('name').value.trim();
+    const price   = parseFloat(document.getElementById('price').value);
+    const shares  = parseInt(document.getElementById('shares').value);
+    const current = parseFloat(document.getElementById('current').value);
+    const type    = document.getElementById('type').value;
+    const reason  = document.getElementById('reason').value.trim();
+    const stop    = parseFloat(document.getElementById('stop').value) || null;
+    const target  = parseFloat(document.getElementById('target').value) || null;
+
+    if (!code || !name || isNaN(price) || isNaN(shares) || isNaN(current)) {
+      alert('銘柄コード・銘柄名・取得単価・株数・現在値は必須です');
+      return;
+    }
+
+    entries.unshift({ id: Date.now(),
+      date: new Date().toLocaleDateString('ja-JP'),
+      code, name, price, shares, current, type, reason, stop, target });
+
+    ['code','name','price','shares','current','reason','stop','target'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    save();
+  }
+
+  function updateCurrent(id, val) {
+    const e = entries.find(e => e.id === id);
+    if (e) { e.current = parseFloat(val) || e.current; save(); }
+  }
+
+  function deleteEntry(id) {
+    if (!confirm('この記録を削除しますか？')) return;
+    entries = entries.filter(e => e.id !== id);
+    save();
+  }
+
+  function fmt(n) {
+    const sign = n >= 0 ? '+' : '-';
+    return sign + '¥' + Math.abs(Math.round(n)).toLocaleString();
+  }
+
+  function colorClass(n) {
+    return n > 0 ? 'positive' : n < 0 ? 'negative' : 'neutral';
+  }
+
+  function render() {
+    let genbutsu = 0, shinyou = 0;
+    entries.forEach(e => {
+      const pnl = (e.current - e.price) * e.shares;
+      if (e.type === 'genbutsu') genbutsu += pnl;
+      else shinyou += pnl;
+    });
+    const all = genbutsu + shinyou;
+
+    const gEl = document.getElementById('genbutsu-total');
+    const sEl = document.getElementById('shinyou-total');
+    const aEl = document.getElementById('all-total');
+
+    gEl.textContent = fmt(genbutsu);
+    gEl.className = 'value ' + colorClass(genbutsu);
+    sEl.textContent = fmt(shinyou);
+    sEl.className = 'value ' + colorClass(shinyou);
+    aEl.textContent = fmt(all);
+    aEl.className = 'value ' + colorClass(all);
+
+    const container = document.getElementById('entries-container');
+    if (entries.length === 0) {
+      container.innerHTML = '<p class="empty">まだ記録がありません</p>';
+      return;
+    }
+
+    container.innerHTML = entries.map(e => {
+      const pnl    = (e.current - e.price) * e.shares;
+      const pnlPct = ((e.current - e.price) / e.price * 100).toFixed(1);
+      const cost   = e.price * e.shares;
+      const stopPct   = e.stop   ? ((e.stop - e.price) / e.price * 100).toFixed(1) : null;
+      const targetPct = e.target ? ((e.target - e.price) / e.price * 100).toFixed(1) : null;
+      const cc = colorClass(pnl);
+
+      return `
+      <div class="entry-card">
+        <div class="entry-header">
+          <div>
+            <div class="entry-meta">${e.code} &middot; ${e.date} &middot; ${e.type === 'genbutsu' ? '現物' : '信用'}</div>
+            <div class="entry-name">${e.name}</div>
+          </div>
+          <div class="entry-pnl">
+            <div class="amount ${cc}">${fmt(pnl)}</div>
+            <div class="pct ${cc}">${pnl >= 0 ? '+' : ''}${pnlPct}%</div>
+          </div>
+        </div>
+
+        <div class="mini-grid">
+          <div class="mini-card">
+            <div class="mini-label">取得単価</div>
+            <div class="mini-value">¥${e.price.toLocaleString()}</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-label">株数</div>
+            <div class="mini-value">${e.shares}株</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-label">投資額</div>
+            <div class="mini-value">¥${cost.toLocaleString()}</div>
+          </div>
+        </div>
+
+        <div class="current-row">
+          <label>現在値</label>
+          <input type="number" value="${e.current}" onchange="updateCurrent(${e.id}, this.value)" />
+          <span>円</span>
+        </div>
+
+        ${(e.stop || e.target) ? `
+        <div class="lines-row">
+          ${e.stop   ? `<span class="badge-stop">損切 ¥${e.stop.toLocaleString()}（${stopPct}%）</span>` : ''}
+          ${e.target ? `<span class="badge-target">利確 ¥${e.target.toLocaleString()}（+${targetPct}%）</span>` : ''}
+        </div>` : ''}
+
+        ${e.reason ? `<div class="entry-reason">${e.reason}</div>` : ''}
+
+        <button class="btn-delete" onclick="deleteEntry(${e.id})">&#128465; 削除</button>
+      </div>`;
+    }).join('');
+  }
+
+  render();
+</script>
+</body>
+</html>
